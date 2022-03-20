@@ -29,42 +29,9 @@ class MyWidget(QtWidgets.QWidget):
     def magic(self):
         self.text.setText(random.choice(self.hello))
 
-load_dotenv()
-sg = shotgun_api3.Shotgun("https://wang.shotgrid.autodesk.com",
-                          script_name=os.getenv('SCRIPT_NAME'),
-                          api_key=os.getenv('API_KEY'))
-filter = [
-        ['project', 'is', {'type': 'Project', 'id': 70}],
-        ['sg_status_list','is', "ip"],
-        ['assgined_to','is',""]
-
-        #['tasks','is',{'type': 'Task', 'id': 5097}]
-        ]
-
-def main():
-    user = {"type": "HumanUser", "id": 17}
-    project = {"type": "Project", "id": 70}
-    entity_type =  "Task"
-    #pprint(sg)
-
-    result = sg.following(user, project=project, entity_type=entity_type)
-    #pprint(result)
 
 
-    #filter = [['playlist', 'is', {'type':'Playlist', 'id':6}]]
-    fields = ['due_date']
 
-    result = sg.find("Task",filter,fields)
-    pprint(result)
-
-
-    result = sg.followers({"type": "Task", "id": 3588})
-
-
-    result = sg.followers({"type": "Shot", "id": 863})
-    #pprint(result)
-
-    app = QtWidgets.QApplication([])
 
 def multiReq():
 
@@ -98,10 +65,47 @@ def multiReq():
         time2 = time.time()
 
     print(f'Took {time2-time1:.2f} s')
-'''
+
+app = QtWidgets.QApplication([])
 widget = MyWidget()
 widget.resize(800, 600)
 widget.show()
 
 sys.exit(app.exec_())
+
+
 '''
+sg = shotgun_api3.Shotgun("https://wang.shotgrid.autodesk.com",
+                          script_name=os.getenv('SCRIPT_NAME'),
+                          api_key=os.getenv('API_KEY'))
+                          
+filter = [
+        ['project', 'is', {'type': 'Project', 'id': 70}],
+        ['sg_status_list','is', "ip"],
+        ['assgined_to','is',""]
+
+        #['tasks','is',{'type': 'Task', 'id': 5097}]
+        ]
+
+def main():
+    user = {"type": "HumanUser", "id": 17}
+    project = {"type": "Project", "id": 70}
+    entity_type =  "Task"
+    #pprint(sg)
+
+    result = sg.following(user, project=project, entity_type=entity_type)
+    #pprint(result)
+
+
+    #filter = [['playlist', 'is', {'type':'Playlist', 'id':6}]]
+    fields = ['due_date']
+
+    result = sg.find("Task",filter,fields)
+    pprint(result)
+
+
+    result = sg.followers({"type": "Task", "id": 3588})
+
+
+    result = sg.followers({"type": "Shot", "id": 863})'''
+    #pprint(result)
