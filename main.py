@@ -40,14 +40,15 @@ def multiReq():
     CONNECTIONS = 100
     TIMEOUT = 5
 
-    tlds = open('../data/sample_1k.txt').read().splitlines()
-    urls = ['http://{}'.format(x) for x in tlds[1:]]
+    #tlds = open('../data/sample_1k.txt').read().splitlines()
+    urls = ['https://wang.shotgrid.autodesk.com/api/v1/entity/projects/70/relationships/users']
 
     def load_url(url, timeout):
-        header = ""
-        payload = ""
-        ans = requests.post(url, data=payload,headers=header)
-        return ans.status_code
+        
+        header = header = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJkNDg2ZDlmZS1hODRlLTExZWMtYTExMi0wMjQyYWMxMTAwMDIiLCJpc3MiOiJ3YW5nLnNob3RncmlkLmF1dG9kZXNrLmNvbSIsImF1ZCI6Indhbmcuc2hvdGdyaWQuYXV0b2Rlc2suY29tIiwiZXhwIjoxNjQ3NzgyMzA2LCJpYXQiOjE2NDc3ODE3MDYsInVzZXIiOnsidHlwZSI6IkFwaVVzZXIiLCJpZCI6NjB9LCJzdWRvX2FzX2xvZ2luIjpudWxsLCJhdXRoX3R5cGUiOiJhcGlfa2V5In0.JMU90lXMc2jMj4lpS6Qk0rSWwsZh5OmShCA-1FwpVtg".format(), 'Accept': 'application/json'}
+        r = requests.get(url,headers=header)
+        
+        return r.text
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=CONNECTIONS) as executor:
         future_to_url = (executor.submit(load_url, url, TIMEOUT) for url in urls)
@@ -65,14 +66,16 @@ def multiReq():
         time2 = time.time()
 
     print(f'Took {time2-time1:.2f} s')
-
+    print(out)
+multiReq()
+'''
 app = QtWidgets.QApplication([])
 widget = MyWidget()
 widget.resize(800, 600)
 widget.show()
 
 sys.exit(app.exec_())
-
+'''
 
 '''
 sg = shotgun_api3.Shotgun("https://wang.shotgrid.autodesk.com",
