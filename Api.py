@@ -7,8 +7,10 @@ from dotenv import load_dotenv
 import os
 import json
 import concurrent.futures
-import time
+import datetime
+import numpy as np
 
+np.set_printoptions(threshold=2000)
 class User:
     def __init__(self):
         self.profile = dict()
@@ -26,13 +28,24 @@ class User:
 
         self.workload = 0
         
+        self.dateStat = dict()
+        self.dateStat["timeline"] = np.array([0])
+        now = datetime.datetime.now()
+        self.dateStat["startEnd"] = \
+            [datetime.date(now.year+10, 1, 1),datetime.date(now.year-10, 1, 1)]
+        
         pass
     def print(self):
         print("Status",self.statusStat)
         print("Content",self.contentStat)
         print("Workload",self.workload)
+        print("DateStat",self.dateStat)
+        print("Range",np.shape(self.dateStat["timeline"]))
         print("---------------------------------------")
+        
     def setTaskInfo(self,tasks : dict):
+
+        print(len(self.tasksId))
         for id in self.tasksId:
             task = tasks.get(id)
             #status
@@ -45,10 +58,51 @@ class User:
             else :
                 self.contentStat[task["content"]] = 1 if task["content"] not in self.contentStat \
                     else self.contentStat[task["content"]] + 1
-             
+
+            #workload 
             self.workload += task["workload"]
-        
-       
+
+            #date
+            def changeDate(date):
+                for d in date:
+                    if d > self.dateStat["startEnd"][1]:
+                        self.dateStat["startEnd"][1] = d
+                    if d < self.dateStat["startEnd"][0]:
+                        self.dateStat["startEnd"][0] = d
+                    
+            date = [task["start_date"],task["due_date"]]
+            for i in range(0,2):
+                    date[i] = date[i].split("-")
+                    date[i] = datetime.date(int(date[i][0]),int(date[i][1]),int(date[i][2]))
+          
+            #print((self.dateStat["startEnd"][0]-date[0]).days)
+            #return
+            
+            if len(self.dateStat["timeline"]) == 1:
+                changeDate(date)
+                r = self.dateStat["startEnd"][1]-self.dateStat["startEnd"][0]
+                self.dateStat["timeline"] = np.array([1]*r.days)
+            else :
+                
+                if date[0] < self.dateStat["startEnd"][0] :
+                    #print(date[0],self.dateStat["startEnd"][0],np.shape(self.dateStat["timeline"]))
+                    enlarge = np.array([1]*(self.dateStat["startEnd"][0]-date[0]).days)
+                    self.dateStat["timeline"] = np.concatenate((enlarge,self.dateStat["timeline"]))
+                    if date[1] < self.dateStat["startEnd"][0] :
+                        changeDate(date)
+                        continue
+                if date[1] > self.dateStat["startEnd"][1] :
+                    #print(date[1] , self.dateStat["startEnd"][1],np.shape(self.dateStat["timeline"]))
+                    enlarge = np.array([1]*(date[1]-self.dateStat["startEnd"][1]).days)
+                    self.dateStat["timeline"] = np.concatenate((self.dateStat["timeline"],enlarge))
+                    if date[0] > self.dateStat["startEnd"][1] :
+                        changeDate(date)
+                        continue
+                changeDate(date)
+                idStart = date[0] - self.dateStat["startEnd"][0] 
+                idEnd = date[1]-self.dateStat["startEnd"][0]
+                #print(idStart,idEnd)
+                self.dateStat["timeline"][idStart.days:idEnd.days+1] += 1
         pass
     
 class Api:
@@ -109,6 +163,8 @@ class Api:
             re[userId] = User()
             re[userId].tasksId = tasks
             allTask += tasks
+
+            break
         # userId : User , [taskId]
         return  re ,allTask
 
@@ -190,7 +246,9 @@ class Api:
                     out.append(data)
    
 a = Api()
-#a.getAccessToken()
+
+a.getAccessToken()
+
 ids = a.getAllUser(70)
 userTasks,allTask = a.getUserFollowing(ids,"Task",70)
 print(userTasks)
