@@ -1,7 +1,8 @@
 # This Python file uses the following encoding: utf-8
 
-from api import Api
-from entity.project import Project
+
+import entity.project as p
+import api as api
 class Controller:
     def __init__(self):
         pass
@@ -9,10 +10,10 @@ class Controller:
   
 pMap = dict()
 def init(op):
-    a = Api()
+    a = api.Api()
     a.getAccessToken()
     pid = 70
-    pMap[70] = Project(70)
+    pMap[70] = p.Project(70)
     a.getAllUser(pMap[pid])
 
     def showTask():

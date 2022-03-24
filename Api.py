@@ -12,15 +12,16 @@ import numpy as np
 from entity.note import Note
 from entity.task import Task
 from entity.user import User
-from entity.project import Project
+import entity.project as Project
 np.set_printoptions(threshold=1000)
 
 
-MAXTHREAD = 450
+MAXTHREAD = 400
 class Api:
+    ACCESS_TOKEN = None
     def __init__(self):
         load_dotenv()
-        self.ACCESS_TOKEN = None
+        
         self.scriptName = os.getenv('SCRIPT_NAME')
         self.scriptKey = os.getenv('API_KEY')
         self.AUTH_URL = "https://wang.shotgrid.autodesk.com/api/v1/auth/access_token"
@@ -32,8 +33,8 @@ class Api:
         headers = {'Access-Type': "offline" ,'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
         r = requests.post(self.AUTH_URL, data=payload, headers=headers)
         jsonData = json.loads(r.text)
-        self.ACCESS_TOKEN = jsonData['access_token']
-        print(self.ACCESS_TOKEN)
+        Api.ACCESS_TOKEN = jsonData['access_token']
+        print(Api.ACCESS_TOKEN)
 
     def getTaskData(self,taskId):
         url = "{}/entity/Task/{}".format(self.URL,taskId)
@@ -72,19 +73,33 @@ class Api:
                     project.tasks[entity["id"]] = tmp
                     project.users[userId].tasks[entity["id"]] = tmp
                 elif type == "Note":
-                    tmp = Note(entity["id"])
+                    tmp = Note(entity["id"],project)
                     project.notes[entity["id"]] = tmp
                     project.users[userId].notes[entity["id"]] = tmp
             #temp
             break
         
-
+    def getIndivInfo(self,type,ids):
+        urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in ids]
+        res = self.request("GET",urls)
+        re = dict()
+        for e in res :
+            start = len(self.URL)+len("/entity/")+len(type)
+            end = e[0].find("/",start+1) if e[0].find("/",start+1)!=-1 else len(e[0])+1
+            try :
+                c+=1
+                id = int(e[0][start+1:end])
+                re[id] = e[1]
+            except :
+                pass
+        return re
     def getInfo(self,project:Project,type,info="attributes"):
         if type=="Task":
             urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in project.tasks.keys()]
         elif type=="Note" :
             urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in project.notes.keys()]
-       
+        elif type=="Shot" :
+            urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in project.links.keys()]
         res = self.request("GET",urls)
         c = 0
         for e in res:
@@ -98,17 +113,20 @@ class Api:
                     project.tasks[id].setValue(e[1]["data"][info])
                 elif type=="Note":
                     project.notes[id].setValue(e[1]["data"])
+                    
+                elif type=="Shot":
+                    project.links[id].setAtrb(e[1]["data"][info])
+
             except :
                 pass
+        if type=="Note":
+            project.getLinksValue()
         print(c)
     
 
-
-   
-
     def get(self,url):
         #print("get")
-        header = {"Authorization": "Bearer {}".format(self.ACCESS_TOKEN), 'Accept': 'application/json'}
+        header = {"Authorization": "Bearer {}".format(Api.ACCESS_TOKEN), 'Accept': 'application/json'}
         r = requests.get(url,headers=header)
         #print(r.text)
         if (r.status_code == 401):
