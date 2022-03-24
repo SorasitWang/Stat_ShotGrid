@@ -17,18 +17,19 @@ def init(op):
 
     def showTask():
         a.getUserFollowing(pMap[pid],"Task")
-        taskInfo = a.getTaskInfo(pMap[pid])
-       
+        a.getInfo(pMap[pid],"Task","attributes")
         #summarize taskinfo for each user
         pMap[pid].summarize()
         
 
     def showNotes():
-        userNotes,allNotes = a.getUserFollowing(pMap[pid],"Note")
-        print(userNotes)
+        a.getUserFollowing(pMap[pid],"Note")
+        a.getInfo(pMap[pid],"Note","relationships")
+        for u in pMap[pid].users.values():
+            u.print("Note")
 
     if op=="T" :
         showTask()
     elif op=="N":
         showNotes()
-init("T")
+init("N")

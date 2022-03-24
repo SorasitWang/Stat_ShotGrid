@@ -9,13 +9,14 @@ import json
 import concurrent.futures
 import datetime
 import numpy as np
+from entity.note import Note
 from entity.task import Task
 from entity.user import User
 from entity.project import Project
 np.set_printoptions(threshold=1000)
 
 
-
+MAXTHREAD = 450
 class Api:
     def __init__(self):
         load_dotenv()
@@ -49,6 +50,7 @@ class Api:
         url = "{}/entity/projects/{}/relationships/users".format(self.URL,projectID)
         res = self.request("GET",[url])[0]
         for user in res[1]['data']:
+            #project.users[17] = User(17)
             project.users[user['id']] = User(user['id'])
            
     
@@ -59,32 +61,47 @@ class Api:
             urls.append("{}/entity/human_users/{}/following?entity={}&project_id={}"
                 .format(self.URL,id,type.lower(),project.id))
         res = self.request("GET",urls)
-        allTasks = []
         for e in res:
             #0 : url , 1 : data
             start = 60
             end = e[0].find("/",start+1)
             userId = int(e[0][start+1:end])
             for entity in e[1]['data']:
-                tmp = Task(entity["id"])
-                project.tasks[entity["id"]] = tmp
-                project.users[userId].tasks[entity["id"]] = tmp
+                if type == "Task":
+                    tmp = Task(entity["id"])
+                    project.tasks[entity["id"]] = tmp
+                    project.users[userId].tasks[entity["id"]] = tmp
+                elif type == "Note":
+                    tmp = Note(entity["id"])
+                    project.notes[entity["id"]] = tmp
+                    project.users[userId].notes[entity["id"]] = tmp
             #temp
             break
         
 
-    def getTaskInfo(self,project:Project):
-        urls = [ "{}/entity/Task/{}".format(self.URL,id) for id in project.tasks.keys()]
+    def getInfo(self,project:Project,type,info="attributes"):
+        if type=="Task":
+            urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in project.tasks.keys()]
+        elif type=="Note" :
+            urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in project.notes.keys()]
+       
         res = self.request("GET",urls)
-        re = dict()
+        c = 0
         for e in res:
-            start = len(self.URL)+12
+            start = len(self.URL)+len("/entity/")+len(type)
             end = e[0].find("/",start+1) if e[0].find("/",start+1)!=-1 else len(e[0])+1
-            id = int(e[0][start+1:end])
-            #project.tasks[id].attributes = 
-            project.tasks[id].setValue(e[1]["data"]["attributes"])
-          
-            
+            try :
+                c+=1
+                id = int(e[0][start+1:end])
+                if type=="Task":
+                    #Task in User also change
+                    project.tasks[id].setValue(e[1]["data"][info])
+                elif type=="Note":
+                    project.notes[id].setValue(e[1]["data"])
+            except :
+                pass
+        print(c)
+    
 
 
    
@@ -100,10 +117,11 @@ class Api:
             return self.get(url)
         elif (r.status_code == 200):
             jsonData = json.loads(r.text)
-            #print(jsonData)
+            #print(url)
             return url,jsonData
         else :
-            pprint("Wrong param format")
+            print(r.content)
+            #print("Wrong param format")
 
     def load_url(self,url):
         print("load")
@@ -115,8 +133,8 @@ class Api:
     def request(self,method,urls):
 
         out = []
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(urls)) as executor:
+        
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAXTHREAD) as executor:
             if method == "GET":
                 future_to_url = (executor.submit(self.get,url) for url in urls)
             elif method == "POST":
@@ -138,7 +156,7 @@ class Api:
     def multiFn(fn,input,workers=10000):
         #input : identity : inputData
         out = []
-        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAXTHREAD ) as executor:
             
             future_to_url = (executor.submit(fn,input[identity]) for identity in list(input.keys()))
            

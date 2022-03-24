@@ -11,6 +11,7 @@ class User:
         self.id = id
         #task
         self.tasks = dict()
+        self.notes = dict()
         self.tasksId = []
         self.tasksInfo = []
 
@@ -33,14 +34,18 @@ class User:
         #note
         
         pass
-    def print(self):
+    def print(self,type=None):
         print(self.id)
-        print("Status",self.statusStat)
-        print("Content",self.contentStat)
-        print("Workload",self.workload)
-        print("DateStat",self.dateStat)
-        print("Range",np.shape(self.dateStat["timeline"]))
-        print("---------------------------------------")
+        if type==None or type=="Task" :
+            print("Status",self.statusStat)
+            print("Content",self.contentStat)
+            print("Workload",self.workload)
+            print("DateStat",self.dateStat)
+            print("Range",np.shape(self.dateStat["timeline"]))
+            print("---------------------------------------")
+        if type==None or type=="Note":
+            for n in self.notes.values():
+                n.print()
         
     def summarizeTask(self):
 
