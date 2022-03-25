@@ -1,7 +1,7 @@
 class Task:
     def __init__(self,id):
         self.id = id
-        
+        self.name = ""
         self.workload = ""
         self.status = ""
         self.dueDate = None
@@ -14,6 +14,7 @@ class Task:
         self.dueDate = atrb["due_date"]
         self.startDate = atrb["start_date"]
         self.content = atrb["content"]
+        self.name = atrb["cached_display_name"]
     
     def print(self):
         print(self.workload,self.status,self.startDate,self.dueDate)

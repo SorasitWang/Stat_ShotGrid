@@ -5,9 +5,10 @@ import sys
 from entity.task import Task
 from controller import Controller
 
-from PySide6.QtCharts import (QChart, QChartView, QPieSeries,QLineSeries)
+from PySide6.QtCharts import (QChart, QChartView, QPieSeries,QLineSeries,
+                            QBarCategoryAxis, QBarSeries, QBarSet, QValueAxis)
 from PySide6.QtGui import QPainter
-from PySide6.QtCore import (QFile,QDate,QPointF)
+from PySide6.QtCore import (QFile,QDate,QPointF,Qt)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog,
                                QDialogButtonBox, QGridLayout, QGroupBox,
@@ -30,7 +31,8 @@ class Widget(QWidget):
         print(allIds)
 
         self.controller = Controller()
-        self.selectedProject = self.controller.selectProject(70)
+        self.pId = 70
+        self.selectedProject = self.controller.selectProject(self.pId)
         #print(self.selectedProject)
         x = list(self.controller.getUsers().values())
         self.user = None
@@ -48,7 +50,7 @@ class Widget(QWidget):
         self.create_menu()
         self.createBasicMenu()
         self.createDataShow()
-        self.setFixedSize(840,600)
+        self.setFixedSize(1000,600)
 
         
         big_editor = QTextEdit()
@@ -201,27 +203,35 @@ class Widget(QWidget):
         self._stat.setContentsMargins(0,0,0,0)
 
         self.pSeries1 = QPieSeries()
-        self.pSeries1.append("sss",0.5)
-        self.pSeries1.append("444",0.5)
-        
-        chart_slice1 = self.pSeries1.slices()[0]
-        chart_slice1.setExploded()
-        chart_slice1.setLabelVisible()
+        stat = self.user.statusStat
+        i = 0
+        for s in stat.keys():
+            self.pSeries1.append(s,stat[s])
+            chart_slice1 = self.pSeries1.slices()[i]
+            i+=1
+            #chart_slice1.setExploded()
+            chart_slice1.setLabelVisible()
         self.pChart1 = QChart()
         self.pChart1.addSeries(self.pSeries1)
+        self.pChart1.legend().hide()
         self._chartPView1 = QChartView(self.pChart1)
         self._chartPView1.setContentsMargins(0,0,0,0)
 
 
+
         self.pSeries2 = QPieSeries()
-        self.pSeries2.append("sss",0.5)
-        self.pSeries2.append("444",0.5)
-        
-        chart_slice2 = self.pSeries2.slices()[0]
-        chart_slice2.setExploded()
-        chart_slice1.setLabelVisible()
+        stat = self.user.contentStat
+        i = 0
+        for c in stat.keys():
+            print(c)
+            self.pSeries2.append(c,stat[c])
+            chart_slice2 = self.pSeries2.slices()[i]
+            i+=1
+            #chart_slice2.setExploded()
+            chart_slice2.setLabelVisible()
         self.pChart2 = QChart()
         self.pChart2.addSeries(self.pSeries2)
+        self.pChart2.legend().hide()
         self._chartPView2 = QChartView(self.pChart2)
         self._chartPView2.setContentsMargins(0,0,0,0)
         #self._contentChart.(self._chart_view)
@@ -238,11 +248,7 @@ class Widget(QWidget):
         self.lSeries.append(3, 8)
         self.lSeries.append(7, 4)
         self.lSeries.append(10, 5)
-        self.lSeries.append(QPointF(11, 1))
-        self.lSeries.append(QPointF(13, 3))
-        self.lSeries.append(QPointF(17, 6))
-        self.lSeries.append(QPointF(18, 3))
-        self.lSeries.append(QPointF(20, 2))
+
 
         self.lChart = QChart()
         self.lChart.legend().hide()
@@ -253,8 +259,7 @@ class Widget(QWidget):
         self._chartLView = QChartView(self.lChart)
         self._chartLView.setRenderHint(QPainter.Antialiasing)
 
-
-        
+     
 
 
        
@@ -262,9 +267,9 @@ class Widget(QWidget):
 
 
         _view.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Preferred)
-        _view.setFixedSize(300,250)
+        _view.setFixedSize(400,200)
         _content.setSizePolicy(QSizePolicy.Preferred.Fixed,QSizePolicy.Preferred)
-        _content.setFixedSize(300,250)
+        _content.setFixedSize(400,200)
         taskLayout.addWidget(_view,0,0)
         taskLayout.addWidget(_content,0,1)
         taskLayout.addWidget(self._stat,1,0)
