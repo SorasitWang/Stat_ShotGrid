@@ -2,10 +2,10 @@ class Task:
     def __init__(self,id):
         self.id = id
         
-        self.workload = None
-        self.status = None
+        self.workload = ""
+        self.status = ""
         self.dueDate = None
-        self.content = None
+        self.content = ""
         self.startDate = None
     
     def setValue(self,atrb):

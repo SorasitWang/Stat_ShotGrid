@@ -4,33 +4,44 @@
 import entity.project as p
 import api as api
 class Controller:
+    
+       
     def __init__(self):
-        pass
+        self.a = api.Api()
+        self.a.getAccessToken()
+        ids = self.a.initProjects()
+        self.projects = dict()
+        print(ids)
+        for i in ids :
+            self.projects[i] = p.Project(i)
+        self.pid = 70
+        #pMap[70] = p.Project(70)
+        self.a.getAllUser(self.projects[self.pid])
 
-  
-pMap = dict()
-def init(op):
-    a = api.Api()
-    a.getAccessToken()
-    pid = 70
-    pMap[70] = p.Project(70)
-    a.getAllUser(pMap[pid])
+    def getUsers(self):
+        return self.projects[self.pid].users
+    def getAllIds(self):
+        return self.projects.keys()
+    def selectProject(self,id):
+        self.pid = id
 
-    def showTask():
-        a.getUserFollowing(pMap[pid],"Task")
-        a.getInfo(pMap[pid],"Task","attributes")
+    def showTask(self):
+        self.a.getUserFollowing(self.projects[self.pid],"Task")
+        self.a.getInfo(self.projects[self.pid],"Task","attributes")
         #summarize taskinfo for each user
-        pMap[pid].summarize()
-        
+        self.projects[self.pid].summarize()
+            
 
-    def showNotes():
-        a.getUserFollowing(pMap[pid],"Note")
-        a.getInfo(pMap[pid],"Note","relationships")
-        for u in pMap[pid].users.values():
+    def showNotes(self):
+        self.a.getUserFollowing(self.projects[self.pid],"Note")
+        self.a.getInfo(self.projects[self.pid],"Note","relationships")
+        for u in self.projects[self.pid].users.values():
             u.print("Note")
+        '''
+        if op=="T" :
+            showTask()
+        elif op=="N":
+            showNotes()
+        '''
 
-    if op=="T" :
-        showTask()
-    elif op=="N":
-        showNotes()
-init("N")
+

@@ -15,6 +15,7 @@ class Link:
         self.description = attributes["description"]
 
     def print(self):
+        return
         print(self.name)
         print(self.imageURL)
         print(self.description)

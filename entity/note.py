@@ -31,8 +31,8 @@ class Note:
         
     
     def print(self):
-        return
-        print(self.attachments)
+        
+        print(self.links)
         print(self.replies)
         print("description",self.description)
         print("subject",self.subject)

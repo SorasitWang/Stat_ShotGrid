@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 6.0.2, 2022-03-20T19:53:28. -->
+<!-- Written by QtCreator 6.0.2, 2022-03-25T13:42:07. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -139,6 +139,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">D:/program/ShotGrid/Stat/Controller.py</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration.D:/program/ShotGrid/Stat/Controller.py</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/program/ShotGrid/Stat/Controller.py</value>
+    <value type="QString" key="PythonEditor.RunConfiguation.Interpreter">{505930ee-8122-4740-889e-08581723b3b2}</value>
     <value type="QString" key="PythonEditor.RunConfiguation.Script">D:\program\ShotGrid\Stat\Controller.py</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
@@ -156,6 +157,7 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">D:/program/ShotGrid/Stat/widget.py</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration.D:/program/ShotGrid/Stat/widget.py</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">D:/program/ShotGrid/Stat/widget.py</value>
+    <value type="QString" key="PythonEditor.RunConfiguation.Interpreter">{793e3cfc-9fc6-42ff-9c01-da8a92d18daa}</value>
     <value type="QString" key="PythonEditor.RunConfiguation.Script">D:\program\ShotGrid\Stat\widget.py</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>

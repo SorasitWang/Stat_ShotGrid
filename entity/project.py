@@ -13,7 +13,7 @@ class Project:
     def summarize(self):
         for u in self.users.values():
             u.summarizeTask()
-            u.print()
+            #u.print()
     def getLinksValue(self):
         self.api.getInfo(self,"Shot")
         for l in self.links.values() :

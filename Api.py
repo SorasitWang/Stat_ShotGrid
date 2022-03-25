@@ -12,7 +12,7 @@ import numpy as np
 from entity.note import Note
 from entity.task import Task
 from entity.user import User
-import entity.project as Project
+import entity.project as p
 np.set_printoptions(threshold=1000)
 
 
@@ -46,7 +46,7 @@ class Api:
 
     
 
-    def getAllUser(self,project:Project):
+    def getAllUser(self,project):
         projectID = project.id
         url = "{}/entity/projects/{}/relationships/users".format(self.URL,projectID)
         res = self.request("GET",[url])[0]
@@ -55,7 +55,7 @@ class Api:
             project.users[user['id']] = User(user['id'])
            
     
-    def getUserFollowing(self,project : Project,type=None):
+    def getUserFollowing(self,project,type=None):
         urls =[]
         for id in project.users.keys():
             #gen url
@@ -93,7 +93,16 @@ class Api:
             except :
                 pass
         return re
-    def getInfo(self,project:Project,type,info="attributes"):
+    
+    def initProjects(self):
+        url = "{}/entity/projects".format(self.URL)
+        res = self.request("GET",[url])[0]
+        re = []
+        for e in res[1]["data"] :
+            re.append(e["id"])
+          
+        return re
+    def getInfo(self,project,type,info="attributes"):
         if type=="Task":
             urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in project.tasks.keys()]
         elif type=="Note" :
@@ -141,12 +150,7 @@ class Api:
             print(r.content)
             #print("Wrong param format")
 
-    def load_url(self,url):
-        print("load")
-        header = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI0NzIxNjZiOC1hODUwLTExZWMtODgwYy0wMjQyYWMxMTAwMGEiLCJpc3MiOiJ3YW5nLnNob3RncmlkLmF1dG9kZXNrLmNvbSIsImF1ZCI6Indhbmcuc2hvdGdyaWQuYXV0b2Rlc2suY29tIiwiZXhwIjoxNjQ3NzgyOTI4LCJpYXQiOjE2NDc3ODIzMjgsInVzZXIiOnsidHlwZSI6IkFwaVVzZXIiLCJpZCI6NjB9LCJzdWRvX2FzX2xvZ2luIjpudWxsLCJhdXRoX3R5cGUiOiJhcGlfa2V5In0.xvp-kZYzCU_7ZYq9rozmEvgIuEzJ6QAlaU-VepcBMzE".format(), 'Accept': 'application/json'}
-        r = requests.get(url,headers=header)
-        print(r.text)
-        return r.text
+   
 
     def request(self,method,urls):
 
