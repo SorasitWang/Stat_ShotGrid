@@ -17,6 +17,7 @@ class Controller:
         self.pid = 70
         #pMap[70] = p.Project(70)
         self.a.getAllUser(self.projects[self.pid])
+        self.a.getInfo(self.projects[self.pid],"Human_Users")
 
     def getUsers(self):
         return self.projects[self.pid].users

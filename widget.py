@@ -43,7 +43,6 @@ class Widget(QWidget):
         self.user = None
         self.controller.showTask()
         for u in x:
-            print(u.tasks.values())
             if len(u.tasks.values()) != 0 :
                 self.user  = u
         self.controller.showTask()
@@ -98,20 +97,47 @@ class Widget(QWidget):
         self._basicMenu.setFixedSize(200,600)
         mainLayout = QVBoxLayout()
         self._profile = QWidget()
+        self._profile.setFixedHeight(150)
+        self._profile.setSizePolicy(QSizePolicy.Fixed,QSizePolicy.Fixed)
         profieLayout = QGridLayout()
-        profieLayout.addWidget(QPushButton(),0,0)
-        profieLayout.addWidget(QPushButton(),0,1)
-        profieLayout.addWidget(QPushButton(),1,0,1,2)
+        self._firstName = QLabel(self.user.firstName)
+        self._lastName = QLabel(self.user.lastName)
+        self._email = QLabel(self.user.email)
+
+        url = self.user.image
+        image = QImage()
+        self._profileImage = QLabel()
+        self._profileImage.setFixedSize(100,100)
+        w = self._profileImage.width()
+        h = self._profileImage.height()
+        if url != None : 
+            data = urllib.request.urlopen(url).read()
+
+        
+            image.loadFromData(data)
+            self._profileImage.setPixmap(QPixmap(image).scaled(w,h,Qt.KeepAspectRatio))
+        else :
+            self._profileImage.setPixmap(QPixmap("./Stat/res/profile.jpg").scaled(w,h,Qt.KeepAspectRatio))
+        
+        
+       
+        profieLayout.addWidget(self._profileImage,0,0,1,2)
+        profieLayout.addWidget(self._firstName,1,0)
+        profieLayout.addWidget(self._lastName,1,1)
+        profieLayout.addWidget(self._email,2,0,1,2)
         self._profile.setLayout(profieLayout)
 
         self._project = QWidget()
+        self._profile.setFixedHeight(200)
         projectLayout = QVBoxLayout()
-        
+        projectLayout.setSpacing(0)
         projectList = QListWidget()
-        projectList.addItem("1")
-        projectList.addItem("2")
+        projectList.setMaximumHeight(200)
+        projectList.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Fixed)
+        for p in self.controller.projects.keys():
+            projectList.addItem(str(p))
 
-        projectLayout.addWidget(QLabel("All Projects"))
+        #projectLayout.addWidget(QLabel("All Projects"))
         projectLayout.addWidget(projectList)
         self._project.setLayout(projectLayout)
         self._project.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Preferred)
@@ -147,7 +173,7 @@ class Widget(QWidget):
         now = QDate.currentDate()
 
         percent = min(100,int(now.daysTo(start)/end.daysTo(start))*100)
-        print(now.daysTo(start),end.daysTo(start))
+      
         self._countdown.setValue(percent)
 
 
@@ -196,7 +222,7 @@ class Widget(QWidget):
         self._taskImg = QLabel()
         w = self._taskImg.width()
         h = self._taskImg.height()
-        self._taskImg.setPixmap(QPixmap("res/empty.png").scaled(w,h,Qt.KeepAspectRatio))
+        self._taskImg.setPixmap(QPixmap("./Stat/res/empty.png").scaled(w,h,Qt.KeepAspectRatio))
         self._taskImg.setAlignment(Qt.AlignCenter)
 
         _contentLayout.addWidget(self._taskImg,0,0,1,2)

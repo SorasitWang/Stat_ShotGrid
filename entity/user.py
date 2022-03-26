@@ -14,7 +14,10 @@ class User:
         self.notes = dict()
         self.tasksId = []
         self.tasksInfo = []
-
+        self.firstName = ""
+        self.lastName = ""
+        self.image = "./res/profile.jpg"
+        self.email = ""
         self.statusStat = dict()
         self.statusStat["fin"] = 0
         self.statusStat["ip"] = 0
@@ -46,7 +49,12 @@ class User:
         if type==None or type=="Note":
             for n in self.notes.values():
                 n.print()
-        
+    def setAtrb(self,atrb):
+        self.firstName = atrb["firstname"]
+        self.lastName = atrb["lastname"]
+       
+        self.image = atrb["image"]
+        self.email = atrb["email"]
     def summarizeTask(self):
 
         print(len(self.tasksId))

@@ -109,6 +109,8 @@ class Api:
             urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in project.notes.keys()]
         elif type=="Shot" :
             urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in project.links.keys()]
+        elif type=="Human_Users":
+            urls = [ "{}/entity/{}/{}".format(self.URL,type,id) for id in project.users.keys()]
         res = self.request("GET",urls)
         c = 0
         for e in res:
@@ -125,6 +127,8 @@ class Api:
                     
                 elif type=="Shot":
                     project.links[id].setAtrb(e[1]["data"][info])
+                elif type=="Human_Users":
+                    project.users[id].setAtrb(e[1]["data"][info])
 
             except :
                 pass
