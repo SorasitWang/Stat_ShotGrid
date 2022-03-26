@@ -1,14 +1,19 @@
 # This Python file uses the following encoding: utf-8
+
+from datetime import datetime
 import os
 from pathlib import Path
+from pickle import TRUE
 import sys
+
+import urllib.request
 from entity.task import Task
 from controller import Controller
-
+import numpy as np
 from PySide6.QtCharts import (QChart, QChartView, QPieSeries,QLineSeries,
                             QBarCategoryAxis, QBarSeries, QBarSet, QValueAxis)
-from PySide6.QtGui import QPainter
-from PySide6.QtCore import (QFile,QDate,QPointF,Qt)
+from PySide6.QtGui import (QPainter,QImage,QPixmap)
+from PySide6.QtCore import (QFile,QDate,QPointF,Qt,QCalendar)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog,
                                QDialogButtonBox, QGridLayout, QGroupBox,
@@ -16,7 +21,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDialog,
                                QMenu, QMenuBar, QPushButton, QSpinBox,
                               QTextEdit, QVBoxLayout, QWidget , QFrame,QListWidget
                                ,QSizePolicy,QTabWidget,QDateEdit,QProgressBar,
-                               QToolBox)
+                               QToolBox,QScrollArea,QScrollBar)
 
 
 class Widget(QWidget):
@@ -123,8 +128,15 @@ class Widget(QWidget):
     def updateTaskData(self):
         self._status.setText("Status : "+self.selectedTask.status)
         self._workload.setText("Workload : "+str(self.selectedTask.workload))
-        self._description.setText(self.selectedTask.content)
-        print(self.selectedTask.content)
+        self._description.setText("Content : "+self.selectedTask.content)
+        self._name.setText(self.selectedTask.name)
+        url = self.selectedTask.image 
+        data = urllib.request.urlopen(url).read()
+
+        image = QImage()
+        image.loadFromData(data)
+        self._taskImg.setPixmap(QPixmap(image))
+ 
 
         date = self.selectedTask.startDate.split("-")
         start = QDate(int(date[0]),int(date[1]),int(date[2]))
@@ -137,6 +149,8 @@ class Widget(QWidget):
         percent = min(100,int(now.daysTo(start)/end.daysTo(start))*100)
         print(now.daysTo(start),end.daysTo(start))
         self._countdown.setValue(percent)
+
+
     def createTabTask(self):
         self._taskWidget = QWidget()
         taskLayout = QGridLayout()
@@ -148,32 +162,44 @@ class Widget(QWidget):
         _search.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Fixed)
         _viewLayout.addWidget(_search)
 
-        _data = QFrame()
+        _scroll = QScrollArea()
+        _data = QWidget()
         _dataLayout = QVBoxLayout()
+        _scroll.addScrollBarWidget(QWidget(),Qt.AlignRight)
         #dataL = self.selectedProject.users[""].task.values()
+        _scroll.setVerticalScrollBar(QScrollBar())
         
-        for t in list(self.tasks.values())[0:5]:
+        for t in list(self.tasks.values()):
             _dataView = QPushButton(str(t.id))
             _dataView.setFlat(True)
             _dataView.clicked.connect(self.selectTask)
             _dataLayout.addWidget(_dataView)
-            
 
-
-    
-        
         _data.setLayout(_dataLayout)
+        _scroll.setWidget(_data)
         #_data.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Maximum)
-        _viewLayout.addWidget(_data)
+        _viewLayout.addWidget(_scroll)
         _view.setLayout(_viewLayout)
 
 
         #Q1
+        
+
         _content = QWidget()
         _contentLayout = QGridLayout()
         _content.setLayout(_contentLayout)
-        _name = QLabel("Name")
-        _contentLayout.addWidget(_name,0,0,1,2)
+        self._name = QLabel("Name")
+
+        
+
+
+        self._taskImg = QLabel()
+        w = self._taskImg.width()
+        h = self._taskImg.height()
+        self._taskImg.setPixmap(QPixmap("res/empty.png").scaled(w,h,Qt.KeepAspectRatio))
+        self._taskImg.setAlignment(Qt.AlignCenter)
+
+        _contentLayout.addWidget(self._taskImg,0,0,1,2)
         _content.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Preferred)
         _content.setFixedHeight(250)
         _content.setFixedWidth(600)
@@ -187,9 +213,8 @@ class Widget(QWidget):
         self._countdown.setValue(percent)
         self._status = QLabel(self.selectedTask.status if self.selectedTask!=None else "-")
         self._workload = QLabel(self.selectedTask.workload if self.selectedTask!=None else "-")
-        self._description = QTextEdit(self.selectedTask.content if self.selectedTask!=None else "-")
-        self._description.setReadOnly(True)
-
+        self._description = QLabel(self.selectedTask.content if self.selectedTask!=None else "-")
+        
         _contentLayout.addWidget(self._startDate,1,0,1,1)
         _contentLayout.addWidget(self._dueDate,1,1,1,1)
         _contentLayout.addWidget(self._countdown,2,0,1,2)
@@ -243,19 +268,35 @@ class Widget(QWidget):
 
         #Q4
         self.lSeries = QLineSeries()
-        self.lSeries.append(0, 6)
-        self.lSeries.append(2, 4)
-        self.lSeries.append(3, 8)
-        self.lSeries.append(7, 4)
-        self.lSeries.append(10, 5)
-
+        timeline = self.user.dateStat["timeline"]
+        startEnd = self.user.dateStat["startEnd"]
+        start = QDate(startEnd[0].year,startEnd[0].month,startEnd[0].day)
+        end = QDate(startEnd[1].year,startEnd[1].month,startEnd[1].day)
+        duration = start.daysTo(end)
+        cat = []
+        tmp = ""
+        for i in range(duration):
+            tmp = start.addDays(i).toString().split()
+            tmp = tmp[2]+"/"+str(start.addDays(i).month())
+            if i%30==0 :
+                print(i,start.addDays(i),tmp)
+                cat.append(tmp)
+            else :
+                cat.append(" ")
+            self.lSeries.append(i,timeline[i])
+        cat.append(tmp)
 
         self.lChart = QChart()
         self.lChart.legend().hide()
         self.lChart.addSeries(self.lSeries)
         self.lChart.createDefaultAxes()
-        self.lChart.setTitle("Simple line chart example")
-
+        self.lChart.setTitle("Workload Timeline")
+        x = QBarCategoryAxis()
+        x.append(cat)
+        y = QValueAxis()
+        y.setRange(0,np.max(timeline))
+        self.lChart.setAxisX(x)
+        self.lChart.setAxisY(y)
         self._chartLView = QChartView(self.lChart)
         self._chartLView.setRenderHint(QPainter.Antialiasing)
 
@@ -267,9 +308,9 @@ class Widget(QWidget):
 
 
         _view.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Preferred)
-        _view.setFixedSize(400,200)
-        _content.setSizePolicy(QSizePolicy.Preferred.Fixed,QSizePolicy.Preferred)
-        _content.setFixedSize(400,200)
+        _view.setFixedSize(350,200)
+        _content.setSizePolicy(QSizePolicy.Preferred,QSizePolicy.Preferred)
+        _content.setFixedSize(350,200)
         taskLayout.addWidget(_view,0,0)
         taskLayout.addWidget(_content,0,1)
         taskLayout.addWidget(self._stat,1,0)
